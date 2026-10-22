@@ -10,6 +10,7 @@ synctest*.data
 /**.tar.gz
 pubsub-shadow
 **/waggle-bin
+go-libp2p/go-waggle
 params.json
 /venv
 /.venv

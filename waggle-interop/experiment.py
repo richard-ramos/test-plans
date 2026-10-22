@@ -1,7 +1,7 @@
 import random
 from collections import defaultdict
 from dataclasses import dataclass, field
-from typing import Dict, List, Set
+from typing import Dict, List, Set, Tuple
 
 import script_instruction
 from script_instruction import NodeID, ScriptInstruction, WaggleParams
@@ -32,12 +32,12 @@ def init_waggle(node_count: int, template_params: WaggleParams) -> List[ScriptIn
     return instructions
 
 
-def waggle_scenario(node_count: int) -> List[ScriptInstruction]:
+def waggle_scenario(
+    node_count: int, mesh: List[ScriptInstruction]
+) -> List[ScriptInstruction]:
     instructions: List[ScriptInstruction] = []
     instructions.extend(init_waggle(node_count, WaggleParams()))
-
-    number_of_conns_per_node = min(20, node_count - 1)
-    instructions.extend(random_network_mesh(node_count, number_of_conns_per_node))
+    instructions.extend(mesh)
 
     topic = "waggle-topic"
     instructions.append(script_instruction.SubscribeToTopic(topicID=topic))
@@ -98,7 +98,10 @@ def waggle_scenario(node_count: int) -> List[ScriptInstruction]:
 def scenario(scenario_name: str, node_count: int) -> ExperimentParams:
     match scenario_name:
         case "waggle":
-            instructions = waggle_scenario(node_count)
+            mesh = random_network_mesh(node_count, min(20, node_count - 1))
+            instructions = waggle_scenario(node_count, mesh)
+        case "waggle-sparse":
+            instructions = waggle_scenario(node_count, sparse_network_mesh(node_count, 3))
         case _:
             raise ValueError(f"Unknown scenario name: {scenario_name}")
 
@@ -106,9 +109,7 @@ def scenario(scenario_name: str, node_count: int) -> ExperimentParams:
 
 
 IMPLEMENTATIONS: Dict[str, str] = {
-    # The Go implementation is not yet available, but the framework is
-    # structured so it can be added here later, e.g.:
-    # "go": "go-libp2p/waggle-bin",
+    "go": "go-libp2p/waggle-bin",
     # Always use debug rust. We don't measure compute performance here.
     "rust": "rust-libp2p/target/debug/waggle-interop",
 }
@@ -132,6 +133,31 @@ def composition(impls: List[str]) -> List[Binary]:
         Binary(IMPLEMENTATIONS[name], percent_of_nodes=pct)
         for name, pct in zip(impls, percents)
     ]
+
+
+def sparse_network_mesh(
+    node_count: int, number_of_connections: int
+) -> List[ScriptInstruction]:
+    """Node i connects to nodes i+1, ..., i+number_of_connections (mod node_count)."""
+    connected: Set[Tuple[NodeID, NodeID]] = set()
+    instructions = []
+    for node_id in range(node_count):
+        connect_to = []
+        for k in range(1, number_of_connections + 1):
+            target = (node_id + k) % node_count
+            edge = (min(node_id, target), max(node_id, target))
+            if target == node_id or edge in connected:
+                continue
+            connected.add(edge)
+            connect_to.append(target)
+        if connect_to:
+            instructions.append(
+                script_instruction.IfNodeIDEquals(
+                    nodeID=node_id,
+                    instruction=script_instruction.Connect(connectTo=connect_to),
+                )
+            )
+    return instructions
 
 
 def random_network_mesh(
