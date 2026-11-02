@@ -34,7 +34,7 @@ with an even mix of rust-libp2p and go-libp2p nodes.
 
 - [Shadow](https://shadow.github.io/) for shadow experiments.
 - [uv](https://docs.astral.sh/uv/) for python dependencies.
-- Implementation specific requirements for building the implementations (Rust, etc...)
+- Go 1.26, Rust 1.98.1, Nim 2.2.10, and Nimble 0.24.1 to build the peers.
 
 ## Running a simulation
 
@@ -55,19 +55,6 @@ reproduce the test are saved in an output folder which, by default, is named by
 the specific scenario, node count, and composition. For the above example, the
 output folder is `waggle-32-rust-<seed>-<timestamp>.data`.
 
-## Running with Nim
-
-Requires Nim 2.2.10, Nimble 0.24.1, Rust 1.98.1, and Go 1.26, plus Shadow and uv.
-
-```bash
-uv run run.py --node_count 8 --composition nim rust go --scenario waggle
-uv run checks/dissimination.py latest --count 1
-```
-
-The Makefile pins the adapter from
-[iftech/nim-libp2p#3371](https://github.com/iftech/nim-libp2p/pull/3371), still under review.
-Check `latest/shadow.yaml` for the actual mix; implementations are sampled randomly.
-
 ## Adding an implementation
 
 To build the implementation reference `./test-specs/implementation.md`.
@@ -78,10 +65,11 @@ Finally, add it to the `IMPLEMENTATIONS` dict in `experiment.py`.
 
 ## Examples
 
-Minimal test of object dissemination
+Test object dissemination across implementations:
 
 ```bash
-uv run run.py --node_count 2 --composition rust --scenario "waggle" && uv run checks/partial_messages.py latest/
+uv run run.py --node_count 8 --composition nim rust go --scenario waggle
+uv run checks/dissimination.py latest --count 1
 ```
 
 That command runs the shadow simulation and then verifies the stdout logs have
