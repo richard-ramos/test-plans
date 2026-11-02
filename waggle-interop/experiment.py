@@ -110,6 +110,7 @@ def scenario(scenario_name: str, node_count: int) -> ExperimentParams:
 
 IMPLEMENTATIONS: Dict[str, str] = {
     "go": "go-libp2p/waggle-bin",
+    "nim": "nim-libp2p/waggle-bin",
     # Always use debug rust. We don't measure compute performance here.
     "rust": "rust-libp2p/target/debug/waggle-interop",
 }

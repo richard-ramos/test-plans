@@ -11,6 +11,7 @@ synctest*.data
 pubsub-shadow
 **/waggle-bin
 go-libp2p/go-waggle
+nim-libp2p/nim-libp2p
 params.json
 /venv
 /.venv

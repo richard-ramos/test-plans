@@ -55,6 +55,36 @@ reproduce the test are saved in an output folder which, by default, is named by
 the specific scenario, node count, and composition. For the above example, the
 output folder is `waggle-32-rust-<seed>-<timestamp>.data`.
 
+## Running with Nim
+
+Install Nim 2.2.10 and Nimble 0.24.1 alongside the Rust and Go toolchains needed
+by `make binaries`. The pinned Rust peer requires Rust 1.98.1, and the pinned Go
+peer requires Go 1.26. Shadow 3.3.0 was used for the initial Nim integration.
+
+From this directory, run a mixed simulation and check the completion logs:
+
+```bash
+uv run run.py --node_count 8 --composition nim rust go --scenario waggle
+uv run checks/dissimination.py latest --count 1
+```
+
+Use `--composition nim rust` or `--composition nim go` to test a pair, or
+`--composition nim` for a Nim-only run. Use `--scenario waggle-sparse` for the
+sparse topology. The runner builds all peers before starting Shadow.
+Compositions are sampled randomly; inspect `latest/shadow.yaml` to confirm the
+actual implementation mix, especially in small runs.
+
+The Nim adapter lives in nim-libp2p and implements this framework's script and
+piece format. The Makefile currently pins the adapter from
+[iftech/nim-libp2p#3371](https://github.com/iftech/nim-libp2p/pull/3371), which
+builds on the Waggle implementation in
+[iftech/nim-libp2p#3349](https://github.com/iftech/nim-libp2p/pull/3349).
+Both contributions are still under review. To build a different revision:
+
+```bash
+make binaries NIM_LIBP2P_REPO=https://github.com/iftech/nim-libp2p.git NIM_LIBP2P_REV=COMMIT_SHA
+```
+
 ## Adding an implementation
 
 To build the implementation reference `./test-specs/implementation.md`.
