@@ -65,11 +65,10 @@ Finally, add it to the `IMPLEMENTATIONS` dict in `experiment.py`.
 
 ## Examples
 
-Test object dissemination across implementations:
+Minimal test of object dissemination
 
 ```bash
-uv run run.py --node_count 8 --composition nim rust go --scenario waggle
-uv run checks/dissimination.py latest --count 1
+uv run run.py --node_count 2 --composition rust --scenario "waggle" && uv run checks/partial_messages.py latest/
 ```
 
 That command runs the shadow simulation and then verifies the stdout logs have
